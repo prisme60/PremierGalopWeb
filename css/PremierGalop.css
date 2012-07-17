@@ -1,0 +1,81 @@
+/* 
+    Document   : PremierGalop
+    Created on : 11 juil. 2012, 19:46:31
+    Author     : CFC
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+/*div.debug:before {
+        height : 100%;
+        height: attr(data-height px, 30px);
+        width: attr(data-width px, 30px);
+        content: attr(data-width) 'px';
+}*/
+
+div.board > * {
+    position: absolute;
+    text-align: center;
+    vertical-align: middle;
+}
+
+@media (max-height: 800px) {
+    div.board {
+        font-size: 40px;
+    }
+}
+
+@media (max-height: 500px) {
+    div.board {
+        font-size: 20px;
+    }
+}
+
+div.box  {
+    height : 30%;
+    background-color: chocolate;
+}
+
+div.Dcell  {
+    background-color: darkorange;
+}
+
+div.Dcell:after {
+   content: "D";
+}
+
+
+div.cell {
+    background-color: forestgreen;
+    border-radius: 60%;
+    border-right-style: none;
+}
+
+div.ladder  {
+    background-color: blueviolet;
+    border-radius: 100%;
+    border-right-style: ridge;
+}
+
+div.goal  {
+    background-color: red;
+}
+
+div.Dcell , div.cell, div.ladder, div.goal  {
+/*    height: 6%;*/
+    font-size: 100%;
+    border-radius: 60%;
+    border-right-style: none;
+}
+
+img.horse {
+/*    height : 6%;*/
+    height: 16,6%;
+    position: relative;
+/*    border-spacing: 10px 10px;*/
+}
+
