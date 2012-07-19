@@ -57,87 +57,87 @@ for ( var i = 0; i < 4; i++ ) {
 
 
 var cases = [
-  {CaseType : "D", XGridPos: 8, YGridPos: 0},    // 0
-  {CaseType : "c", XGridPos: 8, YGridPos: 1},
-  {CaseType : "c", XGridPos: 8, YGridPos: 2},
-  {CaseType : "c", XGridPos: 8, YGridPos: 3},
-  {CaseType : "c", XGridPos: 8, YGridPos: 4},
-  {CaseType : "c", XGridPos: 8, YGridPos: 5},
-  {CaseType : "c", XGridPos: 8, YGridPos: 6},
-  {CaseType : "c", XGridPos: 9, YGridPos: 6},
-  {CaseType : "c", XGridPos: 10, YGridPos: 6},
-  {CaseType : "c", XGridPos: 11, YGridPos: 6},
-  {CaseType : "c", XGridPos: 12, YGridPos: 6},
-  {CaseType : "c", XGridPos: 13, YGridPos: 6},
-  {CaseType : "c", XGridPos: 14, YGridPos: 6},
-  {CaseType : "x", XGridPos: 14, YGridPos: 7},   //13
-  {CaseType : "D", XGridPos: 14, YGridPos: 8},   //14
-  {CaseType : "c", XGridPos: 13, YGridPos: 8},
-  {CaseType : "c", XGridPos: 12, YGridPos: 8},
-  {CaseType : "c", XGridPos: 11, YGridPos: 8},
-  {CaseType : "c", XGridPos: 10, YGridPos: 8},
-  {CaseType : "c", XGridPos: 9, YGridPos: 8},
-  {CaseType : "c", XGridPos: 8, YGridPos: 8},
-  {CaseType : "c", XGridPos: 8, YGridPos: 9},
-  {CaseType : "c", XGridPos: 8, YGridPos: 10},
-  {CaseType : "c", XGridPos: 8, YGridPos: 11},
-  {CaseType : "c", XGridPos: 8, YGridPos: 12},
-  {CaseType : "c", XGridPos: 8, YGridPos: 13},
-  {CaseType : "c", XGridPos: 8, YGridPos: 14},
-  {CaseType : "x", XGridPos: 7, YGridPos: 14},   //27
-  {CaseType : "D", XGridPos: 6, YGridPos: 14},   //28
-  {CaseType : "c", XGridPos: 6, YGridPos: 13},
-  {CaseType : "c", XGridPos: 6, YGridPos: 12},
-  {CaseType : "c", XGridPos: 6, YGridPos: 11},
-  {CaseType : "c", XGridPos: 6, YGridPos: 10},
-  {CaseType : "c", XGridPos: 6, YGridPos: 9},
-  {CaseType : "c", XGridPos: 6, YGridPos: 8},
-  {CaseType : "c", XGridPos: 5, YGridPos: 8},
-  {CaseType : "c", XGridPos: 4, YGridPos: 8},
-  {CaseType : "c", XGridPos: 3, YGridPos: 8},
-  {CaseType : "c", XGridPos: 2, YGridPos: 8},
-  {CaseType : "c", XGridPos: 1, YGridPos: 8},
-  {CaseType : "c", XGridPos: 0, YGridPos: 8},
-  {CaseType : "x", XGridPos: 0, YGridPos: 7},    //41
-  {CaseType : "D", XGridPos: 0, YGridPos: 6},    //42
-  {CaseType : "c", XGridPos: 1, YGridPos: 6},
-  {CaseType : "c", XGridPos: 2, YGridPos: 6},
-  {CaseType : "c", XGridPos: 3, YGridPos: 6},
-  {CaseType : "c", XGridPos: 4, YGridPos: 6},
-  {CaseType : "c", XGridPos: 5, YGridPos: 6},
-  {CaseType : "c", XGridPos: 6, YGridPos: 6},
-  {CaseType : "c", XGridPos: 6, YGridPos: 5},
-  {CaseType : "c", XGridPos: 6, YGridPos: 4},
-  {CaseType : "c", XGridPos: 6, YGridPos: 3},
-  {CaseType : "c", XGridPos: 6, YGridPos: 2},
-  {CaseType : "c", XGridPos: 6, YGridPos: 1},
-  {CaseType : "c", XGridPos: 6, YGridPos: 0},
-  {CaseType : "x", XGridPos: 7, YGridPos: 0},    //55
-  {CaseType : "1", XGridPos: 7, YGridPos: 1},    //56
-  {CaseType : "2", XGridPos: 7, YGridPos: 2},
-  {CaseType : "3", XGridPos: 7, YGridPos: 3},
-  {CaseType : "4", XGridPos: 7, YGridPos: 4},
-  {CaseType : "5", XGridPos: 7, YGridPos: 5},
-  {CaseType : "6", XGridPos: 7, YGridPos: 6},
-  {CaseType : "1", XGridPos: 13, YGridPos: 7},   //62
-  {CaseType : "2", XGridPos: 12, YGridPos: 7},
-  {CaseType : "3", XGridPos: 11, YGridPos: 7},
-  {CaseType : "4", XGridPos: 10, YGridPos: 7},
-  {CaseType : "5", XGridPos: 9, YGridPos: 7},
-  {CaseType : "6", XGridPos: 8, YGridPos: 7},
-  {CaseType : "1", XGridPos: 7, YGridPos: 13},   //68
-  {CaseType : "2", XGridPos: 7, YGridPos: 12},
-  {CaseType : "3", XGridPos: 7, YGridPos: 11},
-  {CaseType : "4", XGridPos: 7, YGridPos: 10},
-  {CaseType : "5", XGridPos: 7, YGridPos: 9},
-  {CaseType : "6", XGridPos: 7, YGridPos: 8},
-  {CaseType : "1", XGridPos: 1, YGridPos: 7},    //74
-  {CaseType : "2", XGridPos: 2, YGridPos: 7},
-  {CaseType : "3", XGridPos: 3, YGridPos: 7},
-  {CaseType : "4", XGridPos: 4, YGridPos: 7},
-  {CaseType : "5", XGridPos: 5, YGridPos: 7},
-  {CaseType : "6", XGridPos: 6, YGridPos: 7},    //79
-  {CaseType : "$", XGridPos: 7, YGridPos: 7},    //80
+  {CaseType : "D", XGridPos: 8, YGridPos: 0, playerId: 0},    // 0
+  {CaseType : "c", XGridPos: 8, YGridPos: 1, playerId: 0},
+  {CaseType : "c", XGridPos: 8, YGridPos: 2, playerId: 0},
+  {CaseType : "c", XGridPos: 8, YGridPos: 3, playerId: 0},
+  {CaseType : "c", XGridPos: 8, YGridPos: 4, playerId: 0},
+  {CaseType : "c", XGridPos: 8, YGridPos: 5, playerId: 0},
+  {CaseType : "c", XGridPos: 8, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 9, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 10, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 11, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 12, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 13, YGridPos: 6, playerId: 0},
+  {CaseType : "c", XGridPos: 14, YGridPos: 6, playerId: 0},
+  {CaseType : "x", XGridPos: 14, YGridPos: 7, playerId: 1},   //13
+  {CaseType : "D", XGridPos: 14, YGridPos: 8, playerId: 1},   //14
+  {CaseType : "c", XGridPos: 13, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 12, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 11, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 10, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 9, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 8, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 9, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 10, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 11, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 12, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 13, playerId: 1},
+  {CaseType : "c", XGridPos: 8, YGridPos: 14, playerId: 1},
+  {CaseType : "x", XGridPos: 7, YGridPos: 14, playerId: 2},   //27
+  {CaseType : "D", XGridPos: 6, YGridPos: 14, playerId: 2},   //28
+  {CaseType : "c", XGridPos: 6, YGridPos: 13, playerId: 2},
+  {CaseType : "c", XGridPos: 6, YGridPos: 12, playerId: 2},
+  {CaseType : "c", XGridPos: 6, YGridPos: 11, playerId: 2},
+  {CaseType : "c", XGridPos: 6, YGridPos: 10, playerId: 2},
+  {CaseType : "c", XGridPos: 6, YGridPos: 9, playerId: 2},
+  {CaseType : "c", XGridPos: 6, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 5, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 4, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 3, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 2, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 1, YGridPos: 8, playerId: 2},
+  {CaseType : "c", XGridPos: 0, YGridPos: 8, playerId: 2},
+  {CaseType : "x", XGridPos: 0, YGridPos: 7, playerId: 3},    //41
+  {CaseType : "D", XGridPos: 0, YGridPos: 6, playerId: 3},    //42
+  {CaseType : "c", XGridPos: 1, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 2, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 3, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 4, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 5, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 6, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 5, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 4, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 3, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 2, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 1, playerId: 3},
+  {CaseType : "c", XGridPos: 6, YGridPos: 0, playerId: 3},
+  {CaseType : "x", XGridPos: 7, YGridPos: 0, playerId: 0},    //55
+  {CaseType : "1", XGridPos: 7, YGridPos: 1, playerId: 0},    //56
+  {CaseType : "2", XGridPos: 7, YGridPos: 2, playerId: 0},
+  {CaseType : "3", XGridPos: 7, YGridPos: 3, playerId: 0},
+  {CaseType : "4", XGridPos: 7, YGridPos: 4, playerId: 0},
+  {CaseType : "5", XGridPos: 7, YGridPos: 5, playerId: 0},
+  {CaseType : "6", XGridPos: 7, YGridPos: 6, playerId: 0},
+  {CaseType : "1", XGridPos: 13, YGridPos: 7, playerId: 1},   //62
+  {CaseType : "2", XGridPos: 12, YGridPos: 7, playerId: 1},
+  {CaseType : "3", XGridPos: 11, YGridPos: 7, playerId: 1},
+  {CaseType : "4", XGridPos: 10, YGridPos: 7, playerId: 1},
+  {CaseType : "5", XGridPos: 9, YGridPos: 7, playerId: 1},
+  {CaseType : "6", XGridPos: 8, YGridPos: 7, playerId: 1},
+  {CaseType : "1", XGridPos: 7, YGridPos: 13, playerId: 2},   //68
+  {CaseType : "2", XGridPos: 7, YGridPos: 12, playerId: 2},
+  {CaseType : "3", XGridPos: 7, YGridPos: 11, playerId: 2},
+  {CaseType : "4", XGridPos: 7, YGridPos: 10, playerId: 2},
+  {CaseType : "5", XGridPos: 7, YGridPos: 9, playerId: 2},
+  {CaseType : "6", XGridPos: 7, YGridPos: 8, playerId: 2},
+  {CaseType : "1", XGridPos: 1, YGridPos: 7, playerId: 3},    //74
+  {CaseType : "2", XGridPos: 2, YGridPos: 7, playerId: 3},
+  {CaseType : "3", XGridPos: 3, YGridPos: 7, playerId: 3},
+  {CaseType : "4", XGridPos: 4, YGridPos: 7, playerId: 3},
+  {CaseType : "5", XGridPos: 5, YGridPos: 7, playerId: 3},
+  {CaseType : "6", XGridPos: 6, YGridPos: 7, playerId: 3},    //79
+  {CaseType : "$", XGridPos: 7, YGridPos: 7, playerId: -1},    //80
 ];
 
 var logicalRelationOfCases = [];
@@ -154,6 +154,7 @@ var CST_XGRID_SIZE = "XGridSize";
 var CST_YGRID_SIZE = "YGridSize";
 var CST_XGRID_POS = "XGridPos";
 var CST_YGRID_POS = "YGridPos";
+var CST_PLAYER_ID = "playerId";
 
             
 var fillLogicalRelationOfCases = function()
@@ -196,7 +197,7 @@ var generateHorses = function(nbPlayers, nbHorses)
             .data(CST_XGRID_POS,gridBoxPosition[iPlayer][0])
             .data(CST_YGRID_POS,gridBoxPosition[iPlayer][1])
             .data(CST_COLOR,listeChevaux[iPlayer][CST_COLOR])
-            .css({background : listeChevaux[iPlayer][CST_COLOR]})
+            .addClass("player"+iPlayer)
             .appendTo("div.board");
         var box = $("#"+boxName);
         for(var iHorse = 0;iHorse<nbHorses; iHorse++)
@@ -223,6 +224,7 @@ var generateBoard = function()
         var caseType = cases[i][CST_CASE_TYPE];
         var XGridPos = cases[i][CST_XGRID_POS];
         var YGridPos = cases[i][CST_YGRID_POS];
+        var playerId = cases[i][CST_PLAYER_ID];
         var className = {
             "D": CST_DCELL,
             "c": CST_CELL,
@@ -250,7 +252,8 @@ var generateBoard = function()
                 hoverClass: 'hovered',
                 drop: handleHorseDrop
             })
-            .appendTo("div.board");
+            .appendTo("div.board")
+            .addClass("player"+playerId);
     }
 }
 
@@ -327,12 +330,12 @@ var handleHorseDrop = function(event, ui ) {
 //  } 
 }
 
-var listeChevaux = [{image: "gfx/YellowHorse.png", color: "gold"},
-                    {image: "gfx/GreenHorse.png", color: "darkgreen"},
-                    {image: "gfx/RedHorse.png", color: "darkred"},
-                    {image: "gfx/BlueHorse.png", color: "darkblue"}];
+var listeChevaux = [{image: "gfx/YellowHorse.png"},
+                    {image: "gfx/GreenHorse.png"},
+                    {image: "gfx/RedHorse.png"},
+                    {image: "gfx/BlueHorse.png"}];
                 
-
+var goalColor = "red";                
                 
 var nbJoueurs = listeChevaux.length;
 var nbChevaux = 4;

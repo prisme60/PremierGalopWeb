@@ -57,12 +57,11 @@ div.Dcell:after {
 
 div.cell {
     background-color: forestgreen; 
-    border-radius: 60%;
 }
 
 div.ladder  {
     background-color: blueviolet;
-    border-radius: 100%;
+    border-radius: 15%;
 }
 
 div.goal  {
@@ -79,3 +78,18 @@ img.horse {
 /*    border-spacing: 10px 10px;*/
 }
 
+div.player0 {
+    background-color: gold
+}
+
+div.player1 {
+    background-color: darkgreen
+}
+
+div.player2 {
+    background-color: darkred
+}
+
+div.player3 {
+    background-color: darkblue
+}
