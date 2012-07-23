@@ -1,15 +1,3 @@
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-var count = 0;
-for ( var i = 0; i < 4; i++ ) {
-  setTimeout(function(){
-    console.log( "Check the value of i." + count++ );
-  }, i * 200);
-}
-
 //  000000000011111
 //  012345678901234
 //00      ccD
@@ -27,34 +15,6 @@ for ( var i = 0; i < 4; i++ ) {
 //12      c2c
 //13      c1c
 //14      Dcc
-
-//var physicalPositionsOfCases = {
-//  "c" : [[0,6],[0,7],
-//         [1,6],[1,8],
-//         [2,6],[2,8],
-//         [3,6],[3,8],
-//         [4,6],[4,8],
-//         [5,6],[5,8],
-//         [6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[6,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],
-//         [7,0],[7,14],
-//         [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[8,8],[8,9],[8,10],[8,11],[8,12],[8,13],
-//         [9,6],[9,8],
-//         [9,6],[9,8],
-//         [10,6],[10,8],
-//         [11,6],[11,8],
-//         [12,6],[12,8],
-//         [13,6],[13,8],
-//         [14,7],[14,8]
-//     ],
-//   "D" : [[0,8],[8,14],[14,6],[6,0]],
-//   "#" : [[[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],
-//          [[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]],
-//          [[13,7],[12,7],[11,7],[10,7],[9,7],[8,7]],
-//          [[7,1],[7,2],[7,3],[7,4],[7,5],[7,6]]
-//   ],
-//   "?" : [7,7]
-//};
-
 
 var cases = [
   {CaseType : "D", XGridPos: 8, YGridPos: 0, playerId: 0},    // 0
@@ -140,7 +100,7 @@ var cases = [
   {CaseType : "$", XGridPos: 7, YGridPos: 7, playerId: -1},    //80
 ];
 
-var logicalRelationOfCases = [];
+var logicalRelationOfCases = new Array(cases.length);
 
 var boardDimension = 15;
 
@@ -159,29 +119,84 @@ var CST_PLAYER_ID = "playerId";
             
 var fillLogicalRelationOfCases = function()
 {
-    for(var i=0; i < 52; i++)
+    //logicalRelationOfCases.map(function() {return [];})//create an empty liis for each element!
+    var firstLadderIndex = 56;
+    for(var i=0; i < firstLadderIndex; i++)
     {
-        logicalRelationOfCases.push([i,i+1]);
+        logicalRelationOfCases[i]=[i+1];
     }
     var tabLadderBaseIndex = [55,13,27,41];
-    var firstLadderIndex = 56;
     var endCaseIndex = 80;
     var computeIndex = firstLadderIndex;
     for(var ladderIndex=0; ladderIndex < 4; ladderIndex++)
     {
         var indexLadderBase = tabLadderBaseIndex[ladderIndex];
-        logicalRelationOfCases.push([indexLadderBase,computeIndex]); //x-1
+        logicalRelationOfCases[indexLadderBase].push(computeIndex); //x-1
         for(var i=0; i < 5; i++) //1-2 2-3 3-4 4-5 5-6
         {
-            logicalRelationOfCases.push([computeIndex,computeIndex+1]);
+            logicalRelationOfCases[computeIndex] = [computeIndex+1];
             computeIndex++;
         }
-        logicalRelationOfCases.push([computeIndex,endCaseIndex]); //6-$
+        logicalRelationOfCases[computeIndex]=[endCaseIndex]; //6-$
         computeIndex++;
     }
 };
 
-var gridBoxPosition = [[0,0],[9,0],[0,9],[9,9]];
+///////////////////////////////////////////////////////
+var istheBoxLocation = function(cellId) {return (cellId < 0);}
+var isABaseForTheLadderForPlayer = function(cell, playerId)
+{return (cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);}
+
+var isALadderCase = function(cell)
+{
+    var caseType = cell[CST_CASE_TYPE];
+    return caseType == "1" || caseType == "2" || caseType == "3" || caseType == "4" || caseType == "5" || caseType == "6";
+}
+
+var findCaseForThePlayer = function(caseType,playerId)
+{
+    for(var i=0;i<cases.length;i++)
+    {
+        if(cases[i][CST_CASE_TYPE] == caseType && cases[i][CST_PLAYER_ID]==playerId)
+            return cases[i];
+    }
+    return null;
+}
+
+var getNextPosition = function(currentCellId, playerId)
+{
+    if(istheBoxLocation(currentCellId))
+    {//horse comes from the box
+        //find the corresponding D case for the player
+        return findCaseForThePlayer("D",playerId);
+    }
+    var currentCell = cases[currentCellId];
+    if(isABaseForTheLadderForPlayer(currentCell,playerId))
+    {
+        if(isALadderCase(logicalRelationOfCases[currentCellId][0]))
+            return logicalRelationOfCases[currentCellId][0];
+        else
+        {
+            if(isALadderCase(logicalRelationOfCases[currentCellId][1]))
+                return logicalRelationOfCases[currentCellId][1];
+            else
+                console.critical("Invalid logic in the logicalRelationOfCases array");
+        }
+    }
+    else
+    {//the current case is a normal case and the next case is a normal case
+        //or the current case is a ladder case and the next case is a ladder case or goal case
+        return logicalRelationOfCases[currentCellId][0];//only one element in the sub-array
+    }
+    return null;
+}
+///////////////////////////////////////////////////////
+
+
+//Box3||Box0
+//==========
+//Box2||Box1
+var gridBoxPosition = [[9,0],[9,9],[0,9],[0,0]];
 var CST_BOXLOGICUNIT = 6;
 var CST_IMAGE = "image";
 var CST_COLOR = "color";
@@ -355,4 +370,3 @@ $(document).ready(function() {
  
     console.log('FIN!');
 });
-
