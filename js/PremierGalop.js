@@ -165,12 +165,18 @@ horse.prototype = {
     }
 };
 
+var computeHorseId = function(playerId, horseNum) {return playerId*10000 + horseNum;};
+var computePlayerId = function(horseId) {return horseId / 10000;};
+var isValidHorseId = function(horseId) {return horseId >=0;};
+var launchDie = function() {return Math.floor(Math.random()*6 + 1);};
+
 var player = function(playerId, nbHorses)
 {
     this.playerId = playerId;
     this.horses = new Array(nbHorses);
     for(var i=0; i<nbHorses; i++)
-        this.horses[i] = new horse(playerId);
+        this.horses[i] = new horse(computeHorseId(playerId,i));
+    this.arrivedHorses = [];
 }
 
 player.prototype = {
@@ -190,6 +196,11 @@ player.prototype = {
 //            if(this.horses[i].GetHorseId()==horseId)
 //                return this.horses[i];
 //        return null;
+        return getAHorse(function(horse) {return horse.GetHorseId()==horseId;}, horseId);
+    },
+    
+    getHorses : function()
+    {
         return getAHorse(function(horse) {return horse.GetHorseId()==horseId;}, horseId);
     },
     
@@ -260,10 +271,24 @@ board.prototype = {
     isABaseForTheLadderForPlayer : function(cell, playerId)
     {return (cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);},
 
-    isALadderCase : function(cell)
+    isALadderCase : function(cellId)
     {
-        var caseType = cell[CST_CASE_TYPE];
+        var caseType = cases[cellId][CST_CASE_TYPE];
         return caseType == "1" || caseType == "2" || caseType == "3" || caseType == "4" || caseType == "5" || caseType == "6";
+    },
+    
+    getValueOfLadderCase : function(cellId)
+    {
+        switch(cases[cellId])
+        {
+            case "1" :return 1;
+            case "2" :return 2;
+            case "3" :return 3;
+            case "4" :return 4;
+            case "5" :return 5;
+            case "6" :return 6;
+            default :throw "wrong ladder case value";
+        }
     },
     
     whichHorseIsOnTheCase : function (caseId)
@@ -315,9 +340,103 @@ board.prototype = {
         return null;
     },
     
-    getNextPositionForDieValue : function(currentCellId, playerId, dieValue)
+    getNextPositionsForDieValue : function(playerId, dieValue)
     {
-        
+        var horses = player.getPlayerId(playerId).getHorses();
+        var nbHorses = horses.length;
+        var result = [];
+        for(var horseNum = 0; horseNum < nbHorses; horseNum++)
+        {
+            var currentHorse = horses[horseNum];
+            var currentCellId = currentHorse.getCaseId();
+            var targetCellId = getNextPositionForDieValue(currentCellId, currentHorse, dieValue);
+            if(targetCellId >= 0) //only interesting position are returned!
+            {
+                result.push({
+                    caseA : currentCellId,
+                    caseB : targetCellId,
+                    horseId : horses[horseNum].getHorseId()
+                });
+            }
+        }
+    },
+    
+    getNextPositionForDieValue : function(currentCellId, horse, dieValue)
+    {
+        var playerId = computePlayerId(horse.getHorseId());
+        if(istheBoxLocation(currentCellId) && dieValue == 6)
+        {
+            return this.getNextPosition(currentCellId, playerId);
+        }
+        else
+        {
+            var nextPositionCellId = this.getNextPosition(currentCellId, playerId);
+            if(nextPositionCellId<0) //Next position is not possible (a horse of the same color is already on the case)
+            {
+                return -1;
+            }
+            else //position has been retrieved
+            {    
+                var horseIdOnTheNextPosition = this.casesHorsePresence[nextPositionCellId];
+                if(isValidHorseId(horseIdOnTheNextPosition))
+                {//there is already a horse on the next position
+                    var playerIdOfTheOtherHorse = computePlayerId(horseIdOnTheNextPosition);
+                    if(playerIdOfTheOtherHorse == playerId)
+                    {//the horse is owned by the same player, so it is the same color
+                        //case is busy, and can't be freed
+                        return -1;
+                    }
+                    else //the horse is not owned by the player (different color).
+                    {
+                        if(dieValue==1) //So it can't be replaced only if die is 1
+                            return nextPositionCellId;
+                        else //otherwise horse is not allowed to move
+                            return -1;
+                    }
+                }
+                else
+                {//there is no horse on the next position
+                    if(this.isALadderCase(nextPositionCellId))
+                    {
+                        //retrieve value of the ladder case.
+                        var valueOfLadderCase = this.getValueOfLadderCase(nextPositionCellId);
+                        if(dieValue == valueOfLadderCase)
+                            return nextPositionCellId;
+                        else
+                            return -1;
+                    }
+                    else
+                    {
+                        if(dieValue<=1) //if die value is 1, the final position of the move has been reached
+                            return nextPositionCellId;
+                        else
+                            return getNextPositionForDieValue(nextPositionCellId, horse, dieValue-1);
+                    }
+                }
+            }
+        }
+    },
+    
+    moveHorseFromCaseAtoCaseB : function(caseA,caseB)
+    {
+        var horseIdForCaseA = this.casesHorsePresence[caseA];
+        var horseIdForCaseB = this.casesHorsePresence[caseB];
+        var playerIdA = computePlayerId(horseIdForCaseA);
+        var playerIdB = computePlayerId(horseIdForCaseB);
+        if(isValidHorseId(horseIdForCaseB))
+        {
+            if(playerIdA==playerIdB)
+            {
+                throw "error: this move is not allowed";
+            }
+            else
+            {
+                this.players[playerIdB].setCaseId(-1);//horse return to the rest box!
+            }
+        }
+        this.players[playerIdA].setCaseId(caseB);
+        this.casesHorsePresence[caseB] = this.casesHorsePresence[caseA];
+        this.casesHorsePresence[caseA] = -1;
     },
 
     generateHorses : function()
@@ -326,7 +445,9 @@ board.prototype = {
         for(var iPlayer = 0;iPlayer<nbPlayers; iPlayer++)
         {
             var boxName = "box_"+iPlayer;
-            $("<div class='box' id='"+boxName+"'>")
+            $("<div/>")
+                .addClass('box')
+                .attr("id",boxName)
                 .data(CST_XGRID_SIZE,CST_BOXLOGICUNIT)
                 .data(CST_YGRID_SIZE,CST_BOXLOGICUNIT)
                 .data(CST_XGRID_POS,gridBoxPosition[iPlayer][0])
@@ -342,7 +463,11 @@ board.prototype = {
                 var idSharp = "#" + id ;
                 //$("#1_1").draggable({ grid: [ 40, 40 ] });
                 //$(id).draggable({ grid: [ 40, 40 ] });
-                box.append("<img class='horse' id='"+ id +"' src='"+listeChevaux[iPlayer][CST_IMAGE]+"'/>");
+                $("<img/>")
+                    .addClass('horse')
+                    .attr('id',id)
+                    .attr('src',listeChevaux[iPlayer][CST_IMAGE])
+                    .appendTo(box);
                 $(idSharp).draggable({
                     containment: 'div.board',
                     stack: 'div.board',
@@ -377,7 +502,11 @@ board.prototype = {
                 || className[caseType] == CST_DCELL
                 || className[caseType] == CST_GOAL)?
                 "": caseType;
-            $("<div class='"+className[caseType]+"' id=case_'"+i+"'>"+textToDisplay+"</div>")
+            $("<div/>")
+                .addClass(className[caseType])
+                .addClass("player"+playerId)
+                .text(textToDisplay)
+                .attr('id',"case_"+i)
                 .data(CST_XGRID_SIZE,1)
                 .data(CST_YGRID_SIZE,1)
                 .data(CST_XGRID_POS,XGridPos)
@@ -388,9 +517,25 @@ board.prototype = {
                     hoverClass: 'hovered',
                     drop: this.handleHorseDrop
                 })
-                .appendTo("div.board")
-                .addClass("player"+playerId);
+                .appendTo("div.board");
         }
+    },
+    
+    generateResultBox : function()
+    {
+        $("<div/>")
+            .addClass('info')
+            .appendTo("div.board:after");
+      //display score
+        $("<div/>")
+            .addClass('score')
+            .appendTo("div.info");
+        for(var i=0;i<this.getNbPlayers();i++)
+        {
+            
+        }
+      //display die value
+      //display other data like a graphic of the evolution
     },
 
     horseRedim : function()
@@ -474,6 +619,7 @@ $(document).ready(function() {
     console.log('coucou');
     board1.generateBoard();
     board1.generateHorses();
+    board1.generateResultBox();
     board1.redimensionnement();
   
   // En cas de redimensionnement de la fenêtre
