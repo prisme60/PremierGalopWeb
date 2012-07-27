@@ -128,6 +128,21 @@ var CST_BOXLOGICUNIT = 6;
 var CST_IMAGE = "image";
 var CST_COLOR = "color";
 
+var CST_INFOLOGICUNIT_X = CST_BOXLOGICUNIT;
+var CST_INFOLOGICUNIT_Y = boardDimension;
+var CST_INFOLOGICPOS_X = boardDimension;
+var CST_INFOLOGICPOS_Y = 0;
+
+var CST_SCORELOGICUNIT_Y = 1;
+var CST_SCORELOGICPOS_Y = CST_INFOLOGICPOS_Y;
+
+var CST_DIEVALUELOGICUNIT_Y = Math.floor(CST_BOXLOGICUNIT/2);
+var CST_GRAPHICLOGICUNIT_Y = Math.floor(CST_BOXLOGICUNIT/2);
+var CST_DIEVALUELOGICPOS_Y = CST_INFOLOGICUNIT_Y - CST_GRAPHICLOGICUNIT_Y - CST_DIEVALUELOGICUNIT_Y;
+var CST_GRAPHICLOGICPOS_Y = CST_INFOLOGICUNIT_Y - CST_DIEVALUELOGICUNIT_Y;
+
+var CST_CLASS_REDIM = 'redim';
+
 var listeChevaux = [{image: "gfx/YellowHorse.png"},
                     {image: "gfx/GreenHorse.png"},
                     {image: "gfx/RedHorse.png"},
@@ -442,19 +457,21 @@ board.prototype = {
     generateHorses : function()
     {
         var nbPlayers = this.getNbPlayers();
+        var spanBoard = $('span.board');
         for(var iPlayer = 0;iPlayer<nbPlayers; iPlayer++)
         {
             var boxName = "box_"+iPlayer;
             $("<div/>")
                 .addClass('box')
                 .attr("id",boxName)
+                .addClass(CST_CLASS_REDIM)
                 .data(CST_XGRID_SIZE,CST_BOXLOGICUNIT)
                 .data(CST_YGRID_SIZE,CST_BOXLOGICUNIT)
                 .data(CST_XGRID_POS,gridBoxPosition[iPlayer][0])
                 .data(CST_YGRID_POS,gridBoxPosition[iPlayer][1])
                 .data(CST_COLOR,listeChevaux[iPlayer][CST_COLOR])
                 .addClass("player"+iPlayer)
-                .appendTo("div.board");
+                .appendTo(spanBoard);
             var box = $("#"+boxName);
             var nbHorses = this.getNbHorses();
             for(var iHorse = 0;iHorse<nbHorses; iHorse++)
@@ -469,8 +486,8 @@ board.prototype = {
                     .attr('src',listeChevaux[iPlayer][CST_IMAGE])
                     .appendTo(box);
                 $(idSharp).draggable({
-                    containment: 'div.board',
-                    stack: 'div.board',
+                    containment: 'span.board',
+                    stack: 'span.board',
                     cursor: 'move',
                     revert: true
                 });
@@ -480,6 +497,14 @@ board.prototype = {
 
     generateBoard : function()
     {
+        var spanBoard = $("<span/>")
+            .addClass('board')
+            .addClass(CST_CLASS_REDIM)
+            .data(CST_XGRID_SIZE,boardDimension)
+            .data(CST_YGRID_SIZE,boardDimension)
+            .data(CST_XGRID_POS,0)
+            .data(CST_YGRID_POS,0)
+            .appendTo('div.premiergalop');
         for(var i=0;i<cases.length;i++)
         {
             var caseType = cases[i][CST_CASE_TYPE];
@@ -505,6 +530,7 @@ board.prototype = {
             $("<div/>")
                 .addClass(className[caseType])
                 .addClass("player"+playerId)
+                .addClass(CST_CLASS_REDIM)
                 .text(textToDisplay)
                 .attr('id',"case_"+i)
                 .data(CST_XGRID_SIZE,1)
@@ -517,27 +543,82 @@ board.prototype = {
                     hoverClass: 'hovered',
                     drop: this.handleHorseDrop
                 })
-                .appendTo("div.board");
+                .appendTo(spanBoard);
         }
     },
     
     generateResultBox : function()
     {
-        $("<div/>")
+        //display info
+        var info = $("<span/>")
             .addClass('info')
-            .appendTo("div.board:after");
-      //display score
-        $("<div/>")
+            .addClass(CST_CLASS_REDIM)
+            .data(CST_XGRID_SIZE,CST_INFOLOGICUNIT_X)
+            .data(CST_YGRID_SIZE,boardDimension)
+            .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
+            .data(CST_YGRID_POS,CST_INFOLOGICPOS_Y)
+            .appendTo("div.premiergalop");
+      
+        var nbPlayers = this.getNbPlayers();
+        //display score
+        var score = $("<div/>")
             .addClass('score')
-            .appendTo("div.info");
-        for(var i=0;i<this.getNbPlayers();i++)
-        {
+            .addClass(CST_CLASS_REDIM)
+            .data(CST_XGRID_SIZE,CST_INFOLOGICUNIT_X)
+            .data(CST_YGRID_SIZE,CST_SCORELOGICUNIT_Y * nbPlayers)
+            .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
+            .data(CST_YGRID_POS,CST_SCORELOGICPOS_Y)
+            .appendTo(info);
             
+        //display score for each player
+        for(var i=0;i<nbPlayers;i++)
+        {
+            score.append($("<div/>")
+                .addClass('player'+i)
+                .addClass(CST_CLASS_REDIM)
+                .data(CST_XGRID_SIZE,CST_INFOLOGICUNIT_X)
+                .data(CST_YGRID_SIZE,CST_SCORELOGICUNIT_Y)
+                .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
+                .data(CST_YGRID_POS,CST_SCORELOGICPOS_Y + CST_SCORELOGICUNIT_Y * i)
+                .attr('id','score'+i)
+                .text("0000"));
         }
-      //display die value
-      //display other data like a graphic of the evolution
+        
+        //display die value
+        $("<div/>")
+            .addClass('dievalue')
+            .addClass(CST_CLASS_REDIM)
+            .data(CST_XGRID_SIZE,CST_INFOLOGICUNIT_X)
+            .data(CST_YGRID_SIZE,CST_DIEVALUELOGICUNIT_Y)
+            .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
+            .data(CST_YGRID_POS,CST_DIEVALUELOGICPOS_Y)
+            .appendTo(info);
+            
+        //display other data like a graphic of the evolution
+        $("<div/>")
+            .addClass('graphic')
+            .addClass(CST_CLASS_REDIM)
+            .data(CST_XGRID_SIZE,CST_INFOLOGICUNIT_X)
+            .data(CST_YGRID_SIZE,CST_GRAPHICLOGICUNIT_Y)
+            .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
+            .data(CST_YGRID_POS,CST_GRAPHICLOGICPOS_Y)
+            .appendTo(info);
     },
 
+    generatePremierGalop : function()
+    {
+        this.generateBoard();
+        this.generateHorses();
+        this.generateResultBox();
+        this.redimensionnement();
+        var myBoard = this;
+
+        // En cas de redimensionnement de la fenêtre
+        $(window).resize(function(){ 
+            myBoard.redimensionnement(); 
+        });
+    },
+    
     horseRedim : function()
     {
         var gridUnit = parseInt(innerHeight / boardDimension);
@@ -561,7 +642,7 @@ board.prototype = {
     redimensionnement : function()
     {
         var gridUnit = parseInt(innerHeight / boardDimension);
-        var boardPosition = $("div.board").attr("data-height",gridUnit).attr("data-width",gridUnit)
+        var boardPosition = $("span.board").attr("data-height",gridUnit).attr("data-width",gridUnit)
             .css({
                 height: (boardDimension*gridUnit)+'px',
                 width: (boardDimension*gridUnit)+'px'
@@ -579,7 +660,7 @@ board.prototype = {
                 horse.load(this.horseRedim);
         }
 
-        $('div.box, div.horse, div.'+CST_DCELL+', div.'+CST_CELL+', div.'+CST_LADDER+', div.'+CST_GOAL).each(function() {
+        $('div.'+CST_CLASS_REDIM + ', span.'+CST_CLASS_REDIM).each(function() {
             var XGridSize = $(this).data(CST_XGRID_SIZE);
             var YGridSize = $(this).data(CST_YGRID_SIZE);
             var XGridPos = $(this).data(CST_XGRID_POS);
@@ -615,18 +696,8 @@ board.prototype = {
 $(document).ready(function() {
     console.log('ready!');
     var board1 = new board(nbJoueurs,nbChevaux);
-    board1.fillLogicalRelationOfCases();//need only one time for all boards!
-    console.log('coucou');
-    board1.generateBoard();
-    board1.generateHorses();
-    board1.generateResultBox();
-    board1.redimensionnement();
-  
-  // En cas de redimensionnement de la fenêtre
-    $(window).resize(function(){ 
-        board1.redimensionnement(); 
-    }); 
- 
+    board1.fillLogicalRelationOfCases();//need only one time for all boards! 
+    board1.generatePremierGalop();
     console.log('FIN!');
 });
 
