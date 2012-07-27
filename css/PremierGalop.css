@@ -17,7 +17,15 @@ root {
         content: attr(data-width) 'px';
 }*/
 
-div.board > * {
+span.board {
+    float : left;
+}
+
+span.info {
+    float : right;
+}
+
+span.board > * {
     position: absolute;
     text-align: center;
     vertical-align: middle;
@@ -68,10 +76,6 @@ div.goal  {
     background-color: red;
 }
 
-div.hovered {
-    background-color: cyan;/*  !important;*/
-}
-
 img.horse {
 /*    height : 6%;*/
     position: relative;
@@ -79,17 +83,25 @@ img.horse {
 }
 
 div.player0 {
-    background-color: gold
+    background-color: gold;
+    color : black;
 }
 
 div.player1 {
-    background-color: darkgreen
+    background-color: darkgreen;
+    color : white;
 }
 
 div.player2 {
-    background-color: darkred
+    background-color: darkred;
+    color : white;
 }
 
 div.player3 {
-    background-color: darkblue
+    background-color: darkblue;
+    color : white;
+}
+
+div.hovered {
+    background-color: cyan;/*  !important;*/
 }
