@@ -180,17 +180,45 @@ horse.prototype = {
     }
 };
 
-var computeHorseId = function(playerId, horseNum) {return playerId*10000 + horseNum;};
-var computePlayerId = function(horseId) {return horseId / 10000;};
-var isValidHorseId = function(horseId) {return horseId >=0;};
-var launchDie = function() {return Math.floor(Math.random()*6 + 1);};
+var util = {
+    computeHorseId : function(playerId, horseNum) {return playerId*10000 + horseNum;},
+    computePlayerId : function(horseId) {return horseId / 10000;},
+    isValidHorseId : function(horseId) {return horseId >=0;},
+    istheBoxLocation : function(cellId) {return (cellId < 0);},
+    launchDie : function() {return Math.floor(Math.random()*6 + 1);},
+    isABaseForTheLadderForPlayer : function(cell, playerId)
+    {return (cell!=null && cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);},
+
+    isALadderCase : function(cellId)
+    {
+        console.log("cellId = " + cellId);
+        if(cellId==null)
+            return false;
+        var caseType = cases[cellId][CST_CASE_TYPE];
+        return caseType == "1" || caseType == "2" || caseType == "3" || caseType == "4" || caseType == "5" || caseType == "6";
+    },
+    
+    getValueOfLadderCase : function(cellId)
+    {
+        switch(cases[cellId])
+        {
+            case "1" :return 1;
+            case "2" :return 2;
+            case "3" :return 3;
+            case "4" :return 4;
+            case "5" :return 5;
+            case "6" :return 6;
+            default :throw "wrong ladder case value";
+        }
+    }
+};
 
 var player = function(playerId, nbHorses)
 {
     this.playerId = playerId;
     this.horses = new Array(nbHorses);
     for(var i=0; i<nbHorses; i++)
-        this.horses[i] = new horse(computeHorseId(playerId,i));
+        this.horses[i] = new horse(util.computeHorseId(playerId,i));
     this.arrivedHorses = [];
 }
 
@@ -216,7 +244,7 @@ player.prototype = {
     
     getHorses : function()
     {
-        return getAHorse(function(horse) {return horse.GetHorseId()==horseId;}, horseId);
+        return this.horses;
     },
     
     setCaseForHorse : function(horseId, caseId)
@@ -249,6 +277,8 @@ var board = function(nbPlayers, nbHorses)
     this.casesHorsePresence = new Array(nbCases);
     for(var caseId = 0; caseId < nbCases; caseId++)
         this.casesHorsePresence[caseId] = -1;//No Horse on the case.
+    
+    this.currentPlayer = 0;
 };
             
 board.prototype = {
@@ -280,31 +310,6 @@ board.prototype = {
             computeIndex++;
         }
     },
-
-    istheBoxLocation : function(cellId) {return (cellId < 0);},
-
-    isABaseForTheLadderForPlayer : function(cell, playerId)
-    {return (cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);},
-
-    isALadderCase : function(cellId)
-    {
-        var caseType = cases[cellId][CST_CASE_TYPE];
-        return caseType == "1" || caseType == "2" || caseType == "3" || caseType == "4" || caseType == "5" || caseType == "6";
-    },
-    
-    getValueOfLadderCase : function(cellId)
-    {
-        switch(cases[cellId])
-        {
-            case "1" :return 1;
-            case "2" :return 2;
-            case "3" :return 3;
-            case "4" :return 4;
-            case "5" :return 5;
-            case "6" :return 6;
-            default :throw "wrong ladder case value";
-        }
-    },
     
     whichHorseIsOnTheCase : function (caseId)
     {
@@ -317,31 +322,31 @@ board.prototype = {
             return this.players.getHorse(horseId);
     },
     
-    findCaseForThePlayer : function(caseType,playerId)
+    findCaseIdForThePlayer : function(caseType,playerId)
     {
         for(var i=0;i<cases.length;i++)
         {
             if(cases[i][CST_CASE_TYPE] == caseType && cases[i][CST_PLAYER_ID]==playerId)
-                return cases[i];
+                return i;
         }
         return null;
     },
 
     getNextPosition : function(currentCellId, playerId)
     {
-        if(istheBoxLocation(currentCellId))
+        if(util.istheBoxLocation(currentCellId))
         {//horse comes from the box
             //find the corresponding D case for the player
-            return findCaseForThePlayer("D",playerId);
+            return this.findCaseIdForThePlayer("D",playerId);
         }
         var currentCell = cases[currentCellId];
-        if(isABaseForTheLadderForPlayer(currentCell,playerId))
+        if(util.isABaseForTheLadderForPlayer(currentCell,playerId))
         {
-            if(isALadderCase(logicalRelationOfCases[currentCellId][0]))
+            if(util.isALadderCase(logicalRelationOfCases[currentCellId][0]))
                 return logicalRelationOfCases[currentCellId][0];
             else
             {
-                if(isALadderCase(logicalRelationOfCases[currentCellId][1]))
+                if(util.isALadderCase(logicalRelationOfCases[currentCellId][1]))
                     return logicalRelationOfCases[currentCellId][1];
                 else
                     console.critical("Invalid logic in the logicalRelationOfCases array");
@@ -350,6 +355,7 @@ board.prototype = {
         else
         {//the current case is a normal case and the next case is a normal case
             //or the current case is a ladder case and the next case is a ladder case or goal case
+            console.log("currentCellId = " + currentCellId);
             return logicalRelationOfCases[currentCellId][0];//only one element in the sub-array
         }
         return null;
@@ -357,14 +363,14 @@ board.prototype = {
     
     getNextPositionsForDieValue : function(playerId, dieValue)
     {
-        var horses = player.getPlayerId(playerId).getHorses();
+        var horses = this.players[playerId].getHorses();
         var nbHorses = horses.length;
         var result = [];
         for(var horseNum = 0; horseNum < nbHorses; horseNum++)
         {
             var currentHorse = horses[horseNum];
             var currentCellId = currentHorse.getCaseId();
-            var targetCellId = getNextPositionForDieValue(currentCellId, currentHorse, dieValue);
+            var targetCellId = this.getNextPositionForDieValue(currentCellId, currentHorse, dieValue);
             if(targetCellId >= 0) //only interesting position are returned!
             {
                 result.push({
@@ -374,14 +380,18 @@ board.prototype = {
                 });
             }
         }
+        return result;
     },
     
     getNextPositionForDieValue : function(currentCellId, horse, dieValue)
     {
-        var playerId = computePlayerId(horse.getHorseId());
-        if(istheBoxLocation(currentCellId) && dieValue == 6)
+        var playerId = util.computePlayerId(horse.getHorseId());
+        if(util.istheBoxLocation(currentCellId))
         {
-            return this.getNextPosition(currentCellId, playerId);
+            if(dieValue == 6)
+                return this.getNextPosition(currentCellId, playerId); //move the horse from the rest box
+            else
+                return -1;//can't move the horse from the rest box!
         }
         else
         {
@@ -393,9 +403,9 @@ board.prototype = {
             else //position has been retrieved
             {    
                 var horseIdOnTheNextPosition = this.casesHorsePresence[nextPositionCellId];
-                if(isValidHorseId(horseIdOnTheNextPosition))
+                if(util.isValidHorseId(horseIdOnTheNextPosition))
                 {//there is already a horse on the next position
-                    var playerIdOfTheOtherHorse = computePlayerId(horseIdOnTheNextPosition);
+                    var playerIdOfTheOtherHorse = util.computePlayerId(horseIdOnTheNextPosition);
                     if(playerIdOfTheOtherHorse == playerId)
                     {//the horse is owned by the same player, so it is the same color
                         //case is busy, and can't be freed
@@ -411,10 +421,10 @@ board.prototype = {
                 }
                 else
                 {//there is no horse on the next position
-                    if(this.isALadderCase(nextPositionCellId))
+                    if(util.isALadderCase(nextPositionCellId))
                     {
                         //retrieve value of the ladder case.
-                        var valueOfLadderCase = this.getValueOfLadderCase(nextPositionCellId);
+                        var valueOfLadderCase = util.getValueOfLadderCase(nextPositionCellId);
                         if(dieValue == valueOfLadderCase)
                             return nextPositionCellId;
                         else
@@ -425,7 +435,7 @@ board.prototype = {
                         if(dieValue<=1) //if die value is 1, the final position of the move has been reached
                             return nextPositionCellId;
                         else
-                            return getNextPositionForDieValue(nextPositionCellId, horse, dieValue-1);
+                            return this.getNextPositionForDieValue(nextPositionCellId, horse, dieValue-1);
                     }
                 }
             }
@@ -436,9 +446,9 @@ board.prototype = {
     {
         var horseIdForCaseA = this.casesHorsePresence[caseA];
         var horseIdForCaseB = this.casesHorsePresence[caseB];
-        var playerIdA = computePlayerId(horseIdForCaseA);
-        var playerIdB = computePlayerId(horseIdForCaseB);
-        if(isValidHorseId(horseIdForCaseB))
+        var playerIdA = util.computePlayerId(horseIdForCaseA);
+        var playerIdB = util.computePlayerId(horseIdForCaseB);
+        if(util.isValidHorseId(horseIdForCaseB))
         {
             if(playerIdA==playerIdB)
             {
@@ -461,7 +471,7 @@ board.prototype = {
         for(var iPlayer = 0;iPlayer<nbPlayers; iPlayer++)
         {
             var boxName = "box_"+iPlayer;
-            $("<div/>")
+            var box = $("<div/>")
                 .addClass('box')
                 .attr("id",boxName)
                 .addClass(CST_CLASS_REDIM)
@@ -472,25 +482,15 @@ board.prototype = {
                 .data(CST_COLOR,listeChevaux[iPlayer][CST_COLOR])
                 .addClass("player"+iPlayer)
                 .appendTo(spanBoard);
-            var box = $("#"+boxName);
             var nbHorses = this.getNbHorses();
             for(var iHorse = 0;iHorse<nbHorses; iHorse++)
             {
-                var id = iPlayer + "_" + iHorse ;
-                var idSharp = "#" + id ;
-                //$("#1_1").draggable({ grid: [ 40, 40 ] });
-                //$(id).draggable({ grid: [ 40, 40 ] });
+                var horseId = util.computeHorseId(iPlayer, iHorse);
                 $("<img/>")
                     .addClass('horse')
-                    .attr('id',id)
+                    .attr('id',horseId)
                     .attr('src',listeChevaux[iPlayer][CST_IMAGE])
                     .appendTo(box);
-                $(idSharp).draggable({
-                    containment: 'span.board',
-                    stack: 'span.board',
-                    cursor: 'move',
-                    revert: true
-                });
             }
         }
     },
@@ -538,11 +538,6 @@ board.prototype = {
                 .data(CST_XGRID_POS,XGridPos)
                 .data(CST_YGRID_POS,YGridPos)
                 .data(CST_CASE_TYPE,caseType)
-                .droppable( {
-                    accept: '.horse',//'div.cell, div.Dcell, div.ladder',
-                    hoverClass: 'hovered',
-                    drop: this.handleHorseDrop
-                })
                 .appendTo(spanBoard);
         }
     },
@@ -592,6 +587,7 @@ board.prototype = {
             .data(CST_YGRID_SIZE,CST_DIEVALUELOGICUNIT_Y)
             .data(CST_XGRID_POS,CST_INFOLOGICPOS_X)
             .data(CST_YGRID_POS,CST_DIEVALUELOGICPOS_Y)
+            .attr("data-dievalue","x")
             .appendTo(info);
             
         //display other data like a graphic of the evolution
@@ -690,6 +686,53 @@ board.prototype = {
         ui.draggable.position( {of: $(this), my: 'left top', at: 'left top'} );//gives the position to the horse
         ui.draggable.draggable( 'option', 'revert', false);//don't force the horse to come back to its original place
     //  } 
+    },
+    
+    startGame : function()
+    {
+        var numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
+        $("div.graphic").text(this.currenPlayer);
+        while(numberOfPossibleMoves==0)
+        {//while no move is possible choose another player!
+            numberOfPossibleMoves = this.selectNextPlayer();
+        }
+    },
+    
+    selectNextPlayer : function()
+    {
+         this.currentPlayer = (this.currentPlayer+1>=this.getNbPlayers())?0:this.currentPlayer+1;
+         var divGraphic = $("div.graphic")
+            .text(this.currentPlayer)
+            .attr("data-player",""+this.currentPlayer);
+         return this.updateBoardForCurrentPlayer();
+    },
+    
+    updateBoardForCurrentPlayer : function()
+    {
+        //compute all possible positions
+        var dieValue = util.launchDie();
+        $("div.dievalue").attr("data-dievalue",dieValue);
+        var possiblePositions = this.getNextPositionsForDieValue(this.currentPlayer, dieValue);
+        
+        possiblePositions.forEach(function(element,index,array)
+            {
+                var idSharpDivHorse = "#" + element["horseId"];
+
+                //give the possibility to move the horse!
+                var divHorseSelector = $(idSharpDivHorse).draggable({
+                    containment: 'span.board',
+                    stack: 'span.board',
+                    cursor: 'move',
+                    revert: true
+                });
+                //give the possibility to accept the horse!
+//                        .droppable( {
+//                    accept: '.horse',//'div.cell, div.Dcell, div.ladder',
+//                    hoverClass: 'hovered',
+//                    drop: this.handleHorseDrop
+//                })
+            }, this);
+            return possiblePositions.length;
     }
 }
 
@@ -698,6 +741,7 @@ $(document).ready(function() {
     var board1 = new board(nbJoueurs,nbChevaux);
     board1.fillLogicalRelationOfCases();//need only one time for all boards! 
     board1.generatePremierGalop();
+    board1.startGame();
     console.log('FIN!');
 });
 
