@@ -112,6 +112,7 @@ var CST_DCELL = "Dcell";
 var CST_CELL = "cell";
 var CST_LADDER = "ladder";
 var CST_GOAL = "goal";
+var CST_CASE = "case";
 
 var CST_CASE_TYPE = "CaseType";
 var CST_XGRID_SIZE = "XGridSize";
@@ -119,6 +120,12 @@ var CST_YGRID_SIZE = "YGridSize";
 var CST_XGRID_POS = "XGridPos";
 var CST_YGRID_POS = "YGridPos";
 var CST_PLAYER_ID = "playerId";
+
+var CST_CASE_A = "caseA";
+var CST_CASE_B = "caseB";
+var CST_HORSEID = "horseId";
+
+var CST_MYBOARD = "myBoard";
 
 //Box3||Box0
 //==========
@@ -182,7 +189,7 @@ horse.prototype = {
 
 var util = {
     computeHorseId : function(playerId, horseNum) {return playerId*10000 + horseNum;},
-    computePlayerId : function(horseId) {return horseId / 10000;},
+    computePlayerId : function(horseId) {return (horseId>0)?Math.floor(horseId / 10000):-1;},
     isValidHorseId : function(horseId) {return horseId >=0;},
     istheBoxLocation : function(cellId) {return (cellId < 0);},
     launchDie : function() {return Math.floor(Math.random()*6 + 1);},
@@ -239,7 +246,7 @@ player.prototype = {
 //            if(this.horses[i].GetHorseId()==horseId)
 //                return this.horses[i];
 //        return null;
-        return getAHorse(function(horse) {return horse.GetHorseId()==horseId;}, horseId);
+        return this.getAHorse(function(horse) {return horse.getHorseId()==horseId;}, horseId);
     },
     
     getHorses : function()
@@ -256,7 +263,7 @@ player.prototype = {
     
     getAFreeHorse : function()
     {
-        return getAHorse(function(horse) {return horse.isFreeHorse();});
+        return this.getAHorse(function(horse) {return horse.isFreeHorse();});
     },
     
     getAHorse : function(callbackToTest, valueToTest)
@@ -277,14 +284,26 @@ var board = function(nbPlayers, nbHorses)
     this.casesHorsePresence = new Array(nbCases);
     for(var caseId = 0; caseId < nbCases; caseId++)
         this.casesHorsePresence[caseId] = -1;//No Horse on the case.
-    
-    this.currentPlayer = 0;
 };
             
 board.prototype = {
+    currentListOfPossibleMoves : [],
+    currentPlayer : 0,
     getNbPlayers : function() {return this.players.length;},
     
     getNbHorses : function() {return this.players.length>0?this.players[0].getNbHorses():0;},
+    
+    getHorse: function(horseId)
+    {
+        var playerId = util.computePlayerId(horseId);
+        return this.players[playerId].getHorse(horseId);
+    },
+    
+    getPlayer: function(horseId)
+    {
+        var playerId = util.computePlayerId(horseId);
+        return this.players[playerId];
+    },
     
     fillLogicalRelationOfCases : function()
     {
@@ -442,11 +461,11 @@ board.prototype = {
         }
     },
     
-    moveHorseFromCaseAtoCaseB : function(caseA,caseB)
+    moveHorseFromCaseAtoCaseB : function(horseId,caseA,caseB)
     {
-        var horseIdForCaseA = this.casesHorsePresence[caseA];
+        var horseIdForCaseA = horseId;
         var horseIdForCaseB = this.casesHorsePresence[caseB];
-        var playerIdA = util.computePlayerId(horseIdForCaseA);
+        var playerIdA = this.getPlayer(horseId);
         var playerIdB = util.computePlayerId(horseIdForCaseB);
         if(util.isValidHorseId(horseIdForCaseB))
         {
@@ -456,12 +475,15 @@ board.prototype = {
             }
             else
             {
-                this.players[playerIdB].setCaseId(-1);//horse return to the rest box!
+                var horseB = this.getHorse(horseIdForCaseB);
+                horseB.setCaseId(-1);//horse return to the rest box!
             }
         }
-        this.players[playerIdA].setCaseId(caseB);
-        this.casesHorsePresence[caseB] = this.casesHorsePresence[caseA];
-        this.casesHorsePresence[caseA] = -1;
+        var horseA = this.getHorse(horseIdForCaseA);
+        horseA.setCaseId(caseB);
+        this.casesHorsePresence[caseB] = horseA;
+        if(caseA>=0)
+            this.casesHorsePresence[caseA] = -1;
     },
 
     generateHorses : function()
@@ -488,8 +510,16 @@ board.prototype = {
                 var horseId = util.computeHorseId(iPlayer, iHorse);
                 $("<img/>")
                     .addClass('horse')
-                    .attr('id',horseId)
+                    .attr('id',"horse_" + horseId)
+                    .data('horseId', horseId)
                     .attr('src',listeChevaux[iPlayer][CST_IMAGE])
+                    .draggable({
+                        containment: 'span.board',
+                        stack: 'span.board',
+                        cursor: 'move',
+                        revert: true,
+                        disable: true
+                    })
                     .appendTo(box);
             }
         }
@@ -527,12 +557,19 @@ board.prototype = {
                 || className[caseType] == CST_DCELL
                 || className[caseType] == CST_GOAL)?
                 "": caseType;
+//            $("<div/>",{
+//                "class" : className[caseType] +" player"+playerId +' '+ CST_CASE + ' ' + CST_CLASS_REDIM,
+//                html : textToDisplay,
+//                id : "case_"+i
+//            })
             $("<div/>")
                 .addClass(className[caseType])
                 .addClass("player"+playerId)
+                .addClass(CST_CASE)
                 .addClass(CST_CLASS_REDIM)
                 .text(textToDisplay)
                 .attr('id',"case_"+i)
+                .data('caseId',i)
                 .data(CST_XGRID_SIZE,1)
                 .data(CST_YGRID_SIZE,1)
                 .data(CST_XGRID_POS,XGridPos)
@@ -672,29 +709,59 @@ board.prototype = {
     },
 
     handleHorseDrop : function(event, ui ) {
-    //  var slotNumber = $(this).data( 'number' );
-    //  var cardNumber = ui.draggable.data( 'number' );
-
-    //    if ( slotNumber == cardNumber ) {
-        //ui.draggable.addClass( 'correct' );
-        //ui.draggable.draggable( 'disable' );
-        if($(this).hasClass(CST_GOAL))
+        var caseSelector = $(this);
+        var horseSelector = ui.draggable;
+        var caseId = caseSelector.data( 'caseId' );
+        var horseId = horseSelector.data( 'horseId' );
+        var myBoard = caseSelector.data(CST_MYBOARD);
+        var moveIndex = -1;
+        
+        
+        //we must check if the case is correct for the moved horse!
+        myBoard.currentListOfPossibleMoves.forEach( function(element,index,array)
         {
-            ui.draggable.draggable( 'disable' );//no more draggable
+            if(element[CST_CASE_B] == caseId
+                && element[CST_HORSEID] == horseId)
+                moveIndex = index;
+        },myBoard);
+        if(moveIndex>=0)
+        {   //move is correct!
+            //disable all droppable cases
+            $("div.ui-droppable").droppable( 'destroy' );
+
+            horseSelector.position( {of: caseSelector, my: 'left top', at: 'left top'} );//gives the position to the horse
+            horseSelector.draggable( 'option', 'revert', false);//don't force the horse to come back to its original place
+
+            //disable all movable horses of the player
+            $("img.ui-draggable").draggable( 'disable' );//no more draggable
+            
+            //move horse in the internal logic
+            myBoard.moveHorseFromCaseAtoCaseB(
+                myBoard.currentListOfPossibleMoves[moveIndex][CST_HORSEID],
+                myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_A],
+                myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_B]);
+            
+            myBoard.startGame();
         }
-        $(this).droppable( 'disable' );//the zone is temporaly occupied by the horse
-        ui.draggable.position( {of: $(this), my: 'left top', at: 'left top'} );//gives the position to the horse
-        ui.draggable.draggable( 'option', 'revert', false);//don't force the horse to come back to its original place
-    //  } 
+        else
+        {
+            //bad move, do nothing!
+        }
     },
     
     startGame : function()
     {
+        var dieSelector = $("div.dievalue");
         var numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
         $("div.graphic").text(this.currenPlayer);
         while(numberOfPossibleMoves==0)
         {//while no move is possible choose another player!
-            numberOfPossibleMoves = this.selectNextPlayer();
+            var dieValue = dieSelector.attr("data-dievalue");
+            if(dieValue != 6)
+            {        
+                this.selectNextPlayer();
+            }
+            numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
         }
     },
     
@@ -704,7 +771,6 @@ board.prototype = {
          var divGraphic = $("div.graphic")
             .text(this.currentPlayer)
             .attr("data-player",""+this.currentPlayer);
-         return this.updateBoardForCurrentPlayer();
     },
     
     updateBoardForCurrentPlayer : function()
@@ -716,22 +782,24 @@ board.prototype = {
         
         possiblePositions.forEach(function(element,index,array)
             {
-                var idSharpDivHorse = "#" + element["horseId"];
+                var idSharpDivHorse = "#horse_" + element["horseId"];
 
                 //give the possibility to move the horse!
                 var divHorseSelector = $(idSharpDivHorse).draggable({
-                    containment: 'span.board',
-                    stack: 'span.board',
-                    cursor: 'move',
-                    revert: true
-                });
+                    revert: true,
+                    disable: false
+                }).data(CST_MYBOARD,this);
                 //give the possibility to accept the horse!
-//                        .droppable( {
-//                    accept: '.horse',//'div.cell, div.Dcell, div.ladder',
-//                    hoverClass: 'hovered',
-//                    drop: this.handleHorseDrop
-//                })
+                var idSharpCell = "#case_" + element["caseB"];
+                var idSharpCellSelector =  $(idSharpCell).droppable( {
+                    accept: '.horse',
+                    hoverClass: 'hovered',
+                    drop: this.handleHorseDrop
+                })
+                idSharpCellSelector.addClass("ouafff")
+                .data(CST_MYBOARD,this);
             }, this);
+            this.currentListOfPossibleMoves = possiblePositions; //update the variable member of the class
             return possiblePositions.length;
     }
 }
