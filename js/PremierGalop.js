@@ -768,10 +768,10 @@ board.prototype = {
     startGame : function()
     {
         var dieSelector = $("div.dievalue");
-        var numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
+        var numberOfPossibleMoves = 0;
         $("div.graphic").text(this.currenPlayer);
-        while(numberOfPossibleMoves==0)
-        {//while no move is possible choose another player!
+        do
+        {//while no move is possible : choose another player!
             var dieValue = dieSelector.attr("data-dievalue");
             if(dieValue != 6)
             {        
@@ -779,6 +779,7 @@ board.prototype = {
             }
             numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
         }
+        while(numberOfPossibleMoves==0);
     },
     
     selectNextPlayer : function()
@@ -815,8 +816,8 @@ board.prototype = {
                 idSharpCellSelector.addClass("ouafff")
                 .data(CST_MYBOARD,this);
             }, this);
-            this.currentListOfPossibleMoves = possiblePositions; //update the variable member of the class
-            return possiblePositions.length;
+        this.currentListOfPossibleMoves = possiblePositions; //update the variable member of the class
+        return possiblePositions.length;
     }
 }
 
