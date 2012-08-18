@@ -124,6 +124,7 @@ var CST_PLAYER_ID = "playerId";
 var CST_CASE_A = "caseA";
 var CST_CASE_B = "caseB";
 var CST_HORSEID = "horseId";
+var CST_CASEID = "caseId";
 
 var CST_MYBOARD = "myBoard";
 
@@ -207,7 +208,7 @@ var util = {
     
     getValueOfLadderCase : function(cellId)
     {
-        switch(cases[cellId])
+        switch(cases[cellId][CST_CASE_TYPE])
         {
             case "1" :return 1;
             case "2" :return 2;
@@ -215,7 +216,7 @@ var util = {
             case "4" :return 4;
             case "5" :return 5;
             case "6" :return 6;
-            default :throw "wrong ladder case value";
+            default :throw "wrong ladder case value" + cellId;
         }
     }
 };
@@ -309,10 +310,11 @@ board.prototype = {
     {
         //logicalRelationOfCases.map(function() {return [];})//create an empty liis for each element!
         var firstLadderIndex = 56;
-        for(var i=0; i < firstLadderIndex; i++)
+        for(var i=0; i < firstLadderIndex-1; i++)
         {
             logicalRelationOfCases[i]=[i+1];
         }
+        logicalRelationOfCases[firstLadderIndex-1]=[0]; //x55 --> D0
         var tabLadderBaseIndex = [55,13,27,41];
         var endCaseIndex = 80;
         var computeIndex = firstLadderIndex;
@@ -408,7 +410,13 @@ board.prototype = {
         if(util.istheBoxLocation(currentCellId))
         {
             if(dieValue == 6)
-                return this.getNextPosition(currentCellId, playerId); //move the horse from the rest box
+            {
+                var Dcell = this.getNextPosition(currentCellId, playerId); //move the horse from the rest box
+                if(!util.isValidHorseId(this.casesHorsePresence[Dcell]))
+                    return Dcell;//cell is free (no horse on the case)
+                else
+                    return -1;//cell is not free (another horse is on the case)
+            }
             else
                 return -1;//can't move the horse from the rest box!
         }
@@ -449,7 +457,7 @@ board.prototype = {
                         else
                             return -1;
                     }
-                    else
+                    else //it is a normal case (not a ladder case)
                     {
                         if(dieValue<=1) //if die value is 1, the final position of the move has been reached
                             return nextPositionCellId;
@@ -481,7 +489,7 @@ board.prototype = {
         }
         var horseA = this.getHorse(horseIdForCaseA);
         horseA.setCaseId(caseB);
-        this.casesHorsePresence[caseB] = horseA;
+        this.casesHorsePresence[caseB] = horseIdForCaseA;
         if(caseA>=0)
             this.casesHorsePresence[caseA] = -1;
     },
@@ -569,7 +577,7 @@ board.prototype = {
                 .addClass(CST_CLASS_REDIM)
                 .text(textToDisplay)
                 .attr('id',"case_"+i)
-                .data('caseId',i)
+                .data(CST_CASEID,i)
                 .data(CST_XGRID_SIZE,1)
                 .data(CST_YGRID_SIZE,1)
                 .data(CST_XGRID_POS,XGridPos)
@@ -711,8 +719,8 @@ board.prototype = {
     handleHorseDrop : function(event, ui ) {
         var caseSelector = $(this);
         var horseSelector = ui.draggable;
-        var caseId = caseSelector.data( 'caseId' );
-        var horseId = horseSelector.data( 'horseId' );
+        var caseId = caseSelector.data( CST_CASEID );
+        var horseId = horseSelector.data( CST_HORSEID );
         var myBoard = caseSelector.data(CST_MYBOARD);
         var moveIndex = -1;
         
@@ -732,9 +740,17 @@ board.prototype = {
             horseSelector.position( {of: caseSelector, my: 'left top', at: 'left top'} );//gives the position to the horse
             horseSelector.draggable( 'option', 'revert', false);//don't force the horse to come back to its original place
 
+            horseSelector.appendTo(caseSelector).css({
+                position: "relative",
+                left: 0,
+                top: 0
+            })
+            //ui.helper.remove();
+
             //disable all movable horses of the player
-            $("img.ui-draggable").draggable( 'disable' );//no more draggable
-            
+            //$("img.ui-draggable").draggable( 'disable' );//no more draggable
+            $("img.ui-draggable").draggable('option', 'disable', true );//no more draggable
+            //
             //move horse in the internal logic
             myBoard.moveHorseFromCaseAtoCaseB(
                 myBoard.currentListOfPossibleMoves[moveIndex][CST_HORSEID],
@@ -782,7 +798,7 @@ board.prototype = {
         
         possiblePositions.forEach(function(element,index,array)
             {
-                var idSharpDivHorse = "#horse_" + element["horseId"];
+                var idSharpDivHorse = "#horse_" + element[CST_HORSEID];
 
                 //give the possibility to move the horse!
                 var divHorseSelector = $(idSharpDivHorse).draggable({
@@ -814,3 +830,7 @@ $(document).ready(function() {
 });
 
 }())
+
+//TODO select next player when it is not a 6
+//TODO why sometimes it hangs?
+//TODO some moves are invalid (not on the board!)
