@@ -842,3 +842,4 @@ $(document).ready(function() {
 
 //TODO why sometimes it hangs?
 //TODO some moves are invalid (not on the board!)
+//TODO manage the return of a horse to the rest box, when an opponent horse take the case!
