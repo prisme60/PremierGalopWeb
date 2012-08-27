@@ -190,7 +190,7 @@ horse.prototype = {
 
 var util = {
     computeHorseId : function(playerId, horseNum) {return playerId*10000 + horseNum;},
-    computePlayerId : function(horseId) {return (horseId>0)?Math.floor(horseId / 10000):-1;},
+    computePlayerId : function(horseId) {return (horseId>=0)?Math.floor(horseId / 10000):-1;},
     isValidHorseId : function(horseId) {return horseId >=0;},
     istheBoxLocation : function(cellId) {return (cellId < 0);},
     launchDie : function() {return Math.floor(Math.random()*6 + 1);},
@@ -412,6 +412,12 @@ board.prototype = {
             if(dieValue == 6)
             {
                 var Dcell = this.getNextPosition(currentCellId, playerId); //move the horse from the rest box
+                //CFC debug
+                if(Dcell == null)
+                {
+                    throw "null is not a valid case! (getNextPositionForDieValue)";
+                }
+                //CFC debug
                 if(!util.isValidHorseId(this.casesHorsePresence[Dcell]))
                     return Dcell;//cell is free (no horse on the case)
                 else
@@ -836,4 +842,3 @@ $(document).ready(function() {
 
 //TODO why sometimes it hangs?
 //TODO some moves are invalid (not on the board!)
-//TODO when the first player does a 6, the first horse in the rest box refuses to move on the start case (D), it seems it is due to a not initialized variable (targetB is NULL)
