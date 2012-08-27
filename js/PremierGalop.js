@@ -749,8 +749,10 @@ board.prototype = {
 
             //disable all movable horses of the player
             //$("img.ui-draggable").draggable( 'disable' );//no more draggable
-            $("img.ui-draggable").draggable('option', 'disable', true );//no more draggable
-            //
+            $("img.ui-draggable").draggable('option', 'disable', true ).addClass("noDragg");//no more draggable
+            
+            horseSelector.draggable( 'option', 'revert', true);//force the horse to come back to its original place
+            
             //move horse in the internal logic
             myBoard.moveHorseFromCaseAtoCaseB(
                 myBoard.currentListOfPossibleMoves[moveIndex][CST_HORSEID],
@@ -832,6 +834,6 @@ $(document).ready(function() {
 
 }())
 
-//TODO select next player when it is not a 6
 //TODO why sometimes it hangs?
 //TODO some moves are invalid (not on the board!)
+//TODO when the first player does a 6, the first horse in the rest box refuses to move on the start case (D), it seems it is due to a not initialized variable (targetB is NULL)
