@@ -115,6 +115,7 @@ var CST_GOAL = "goal";
 var CST_CASE = "case";
 
 var CST_CASE_TYPE = "CaseType";
+var CST_CASE_TEXT = "CaseText";
 var CST_XGRID_SIZE = "XGridSize";
 var CST_YGRID_SIZE = "YGridSize";
 var CST_XGRID_POS = "XGridPos";
@@ -218,6 +219,11 @@ var util = {
             case "6" :return 6;
             default :throw "wrong ladder case value" + cellId;
         }
+    },
+    
+    buildTextToDisplayInTheCase : function(textToDisplay)
+    {
+        return '<div class="text">' + textToDisplay + '</div>';
     }
 };
 
@@ -463,6 +469,13 @@ board.prototype = {
                         else
                             return -1;
                     }
+                    else if(util.isABaseForTheLadderForPlayer(nextPositionCellId,playerId))
+                    {
+                        if(dieValue<=1) //if die value is 1, the final position of the move has been reached
+                            return nextPositionCellId;
+                        else
+                            return -1; //move is not possible, because remaining die value can't be used for climbing the ladder'
+                    }
                     else //it is a normal case (not a ladder case)
                     {
                         if(dieValue<=1) //if die value is 1, the final position of the move has been reached
@@ -475,12 +488,14 @@ board.prototype = {
         }
     },
     
+    ///return the horseId of the opponent, in the case where the caseB was occupied by an opponent horse! Otherwise it returns -1.
     moveHorseFromCaseAtoCaseB : function(horseId,caseA,caseB)
     {
         var horseIdForCaseA = horseId;
         var horseIdForCaseB = this.casesHorsePresence[caseB];
         var playerIdA = this.getPlayer(horseId);
         var playerIdB = util.computePlayerId(horseIdForCaseB);
+        var opponentHorseId = -1;
         if(util.isValidHorseId(horseIdForCaseB))
         {
             if(playerIdA==playerIdB)
@@ -491,6 +506,7 @@ board.prototype = {
             {
                 var horseB = this.getHorse(horseIdForCaseB);
                 horseB.setCaseId(-1);//horse return to the rest box!
+                opponentHorseId = horseB.getHorseId();
             }
         }
         var horseA = this.getHorse(horseIdForCaseA);
@@ -498,6 +514,7 @@ board.prototype = {
         this.casesHorsePresence[caseB] = horseIdForCaseA;
         if(caseA>=0)
             this.casesHorsePresence[caseA] = -1;
+        return opponentHorseId;
     },
 
     generateHorses : function()
@@ -581,7 +598,7 @@ board.prototype = {
                 .addClass("player"+playerId)
                 .addClass(CST_CASE)
                 .addClass(CST_CLASS_REDIM)
-                .text(textToDisplay)
+                .html(util.buildTextToDisplayInTheCase(textToDisplay))
                 .attr('id',"case_"+i)
                 .data(CST_CASEID,i)
                 .data(CST_XGRID_SIZE,1)
@@ -589,6 +606,7 @@ board.prototype = {
                 .data(CST_XGRID_POS,XGridPos)
                 .data(CST_YGRID_POS,YGridPos)
                 .data(CST_CASE_TYPE,caseType)
+                .data(CST_CASE_TEXT,textToDisplay)
                 .appendTo(spanBoard);
         }
     },
@@ -760,10 +778,32 @@ board.prototype = {
             horseSelector.draggable( 'option', 'revert', true);//force the horse to come back to its original place
             
             //move horse in the internal logic
-            myBoard.moveHorseFromCaseAtoCaseB(
+            var opponentHorseId = myBoard.moveHorseFromCaseAtoCaseB(
                 myBoard.currentListOfPossibleMoves[moveIndex][CST_HORSEID],
                 myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_A],
                 myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_B]);
+            
+            //The text is removed on case B in order to have only the horse visible on the case!
+            var selector_case_B = $("#case_"+myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_B]);
+            var selector_case_B_div = $("div.text",selector_case_B);
+            selector_case_B_div.remove();//remove text ! (prevent to mix text and horse!)
+            
+            if(opponentHorseId >=0)
+            {
+                //caseB was occupied by an opponent horse
+                var opponentPlayerId = util.computePlayerId(opponentHorseId);
+                //opponent horse is moved on its rest box!
+                $("#horse_" + opponentHorseId)
+                    .appendTo($("#box_"+opponentPlayerId))
+                    .css({position: "relative",
+                            left: 0,
+                            top: 0
+                    });
+            }
+            
+            //case A is free, if a character was displayed, restore it!
+            var selector_case_A = $("#case_"+myBoard.currentListOfPossibleMoves[moveIndex][CST_CASE_A]);
+            selector_case_A.html(util.buildTextToDisplayInTheCase(selector_case_A.data(CST_CASE_TEXT)));//restore text !
             
             myBoard.startGame();
         }
