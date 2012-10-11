@@ -16,7 +16,7 @@
 //13      c1c
 //14      Dcc
 (function(){
-    
+    "use strict";
 var cases = [
   {CaseType : "D", XGridPos: 8, YGridPos: 0, playerId: 0},    // 0
   {CaseType : "c", XGridPos: 8, YGridPos: 1, playerId: 0},
@@ -98,7 +98,7 @@ var cases = [
   {CaseType : "4", XGridPos: 4, YGridPos: 7, playerId: 3},
   {CaseType : "5", XGridPos: 5, YGridPos: 7, playerId: 3},
   {CaseType : "6", XGridPos: 6, YGridPos: 7, playerId: 3},    //79
-  {CaseType : "$", XGridPos: 7, YGridPos: 7, playerId: -1},    //80
+  {CaseType : "$", XGridPos: 7, YGridPos: 7, playerId: -1}    //80
 ];
 
 //logicalRelationOfCases array
@@ -161,13 +161,13 @@ var nbJoueurs = listeChevaux.length;
 var nbChevaux = 4;
 
 
-var horse = function(horseId)
+var Horse = function(horseId)
 {
     this.horseId = horseId;
     this.caseId = -1;//by default a horse is in the Box
-}
+};
 
-horse.prototype = {
+Horse.prototype = {
     getCaseId : function()
     {
         return this.caseId;
@@ -196,12 +196,12 @@ var util = {
     istheBoxLocation : function(cellId) {return (cellId < 0);},
     launchDie : function() {return Math.floor(Math.random()*6 + 1);},
     isABaseForTheLadderForPlayer : function(cell, playerId)
-    {return (cell!=null && cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);},
+    {return (cell!==null && cell[CST_CASE_TYPE] == "x" && cell[CST_PLAYER_ID] == playerId);},
 
     isALadderCase : function(cellId)
     {
         console.log("cellId = " + cellId);
-        if(cellId==null)
+        if(cellId===null)
             return false;
         var caseType = cases[cellId][CST_CASE_TYPE];
         return caseType == "1" || caseType == "2" || caseType == "3" || caseType == "4" || caseType == "5" || caseType == "6";
@@ -227,16 +227,16 @@ var util = {
     }
 };
 
-var player = function(playerId, nbHorses)
+var Player = function(playerId, nbHorses)
 {
     this.playerId = playerId;
     this.horses = new Array(nbHorses);
     for(var i=0; i<nbHorses; i++)
-        this.horses[i] = new horse(util.computeHorseId(playerId,i));
+        this.horses[i] = new Horse(util.computeHorseId(playerId,i));
     this.arrivedHorses = [];
-}
+};
 
-player.prototype = {
+Player.prototype = {
     getNbHorses : function()
     {
         return this.horses.length;
@@ -264,7 +264,7 @@ player.prototype = {
     setCaseForHorse : function(horseId, caseId)
     {
         var horse = this.getHorse(horseId);
-        if(horse !=null)
+        if(horse !== null)
             horse.setCaseId(caseId);
     },
     
@@ -282,18 +282,18 @@ player.prototype = {
     }
 };
 
-var board = function(nbPlayers, nbHorses)
+var Board = function(nbPlayers, nbHorses)
 {
     this.players = new Array(nbPlayers);
     for(var playerId = 0; playerId < nbPlayers; playerId++)
-        this.players[playerId] = new player(playerId,nbHorses);
+        this.players[playerId] = new Player(playerId,nbHorses);
     var nbCases = cases.length;
     this.casesHorsePresence = new Array(nbCases);
     for(var caseId = 0; caseId < nbCases; caseId++)
         this.casesHorsePresence[caseId] = -1;//No Horse on the case.
 };
             
-board.prototype = {
+Board.prototype = {
     currentListOfPossibleMoves : [],
     currentPlayer : 0,
     getNbPlayers : function() {return this.players.length;},
@@ -328,7 +328,7 @@ board.prototype = {
         {
             var indexLadderBase = tabLadderBaseIndex[ladderIndex];
             logicalRelationOfCases[indexLadderBase].push(computeIndex); //x-1
-            for(var i=0; i < 5; i++) //1-2 2-3 3-4 4-5 5-6
+            for(var j=0; j < 5; j++) //1-2 2-3 3-4 4-5 5-6
             {
                 logicalRelationOfCases[computeIndex] = [computeIndex+1];
                 computeIndex++;
@@ -419,7 +419,7 @@ board.prototype = {
             {
                 var Dcell = this.getNextPosition(currentCellId, playerId); //move the horse from the rest box
                 //CFC debug
-                if(Dcell == null)
+                if(Dcell === null)
                 {
                     throw "null is not a valid case! (getNextPositionForDieValue)";
                 }
@@ -686,7 +686,7 @@ board.prototype = {
     
     horseRedim : function()
     {
-        var gridUnit = parseInt(innerHeight / boardDimension);
+        var gridUnit = parseInt(window.innerHeight / boardDimension);
         var horse = $("img.loadHorse:first");
         var horseHeight = horse.height();
         var horseWidth = horse.width();
@@ -706,15 +706,15 @@ board.prototype = {
 
     redimensionnement : function()
     {
-        var gridUnit = parseInt(innerHeight / boardDimension);
+        var gridUnit = parseInt(window.innerHeight / boardDimension);
         var boardPosition = $("span.board").attr("data-height",gridUnit).attr("data-width",gridUnit)
             .css({
                 height: (boardDimension*gridUnit)+'px',
                 width: (boardDimension*gridUnit)+'px'
             })
             .position();
-        var boardLeft = boardPosition['left'];
-        var boardTop = boardPosition['top'];
+        var boardLeft = boardPosition.left;
+        var boardTop = boardPosition.top;
 
         var horse = $("img.loadHorse:first");
         if(horse.length>0)
@@ -768,7 +768,7 @@ board.prototype = {
                 position: "relative",
                 left: 0,
                 top: 0
-            })
+            });
             //ui.helper.remove();
 
             //disable all movable horses of the player
@@ -827,13 +827,13 @@ board.prototype = {
             }
             numberOfPossibleMoves = this.updateBoardForCurrentPlayer();
         }
-        while(numberOfPossibleMoves==0);
+        while(numberOfPossibleMoves===0);
     },
     
     selectNextPlayer : function()
     {
          this.currentPlayer = (this.currentPlayer+1>=this.getNbPlayers())?0:this.currentPlayer+1;
-         var divGraphic = $("div.graphic")
+         $("div.graphic")
             .text(this.currentPlayer)
             .attr("data-player",""+this.currentPlayer);
     },
@@ -850,36 +850,35 @@ board.prototype = {
                 var idSharpDivHorse = "#horse_" + element[CST_HORSEID];
 
                 //give the possibility to move the horse!
-                var divHorseSelector = $(idSharpDivHorse).draggable({
+                $(idSharpDivHorse).draggable({
                     revert: true,
                     disable: false
                 }).data(CST_MYBOARD,this);
                 //give the possibility to accept the horse!
-                var idSharpCell = "#case_" + element["caseB"];
+                var idSharpCell = "#case_" + element.caseB;
                 var idSharpCellSelector =  $(idSharpCell).droppable( {
                     accept: '.horse',
                     hoverClass: 'hovered',
                     drop: this.handleHorseDrop
-                })
+                });
                 idSharpCellSelector.addClass("ouafff")
                 .data(CST_MYBOARD,this);
             }, this);
         this.currentListOfPossibleMoves = possiblePositions; //update the variable member of the class
         return possiblePositions.length;
     }
-}
+};
 
 $(document).ready(function() {
     console.log('ready!');
-    var board1 = new board(nbJoueurs,nbChevaux);
+    var board1 = new Board(nbJoueurs,nbChevaux);
     board1.fillLogicalRelationOfCases();//need only one time for all boards! 
     board1.generatePremierGalop();
     board1.startGame();
     console.log('FIN!');
 });
 
-}())
+}());
 
 //TODO why sometimes it hangs?
 //TODO some moves are invalid (not on the board!)
-//TODO manage the return of a horse to the rest box, when an opponent horse take the case!
